@@ -24,6 +24,11 @@ resource "azurerm_network_interface" "lvm" {
   }
 }
 
+# Create (and display) an SSH key
+resource "tls_private_key" "linux_test_ssh" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
 resource "azurerm_linux_virtual_machine" "lvm" {
   name                = local.vm_name
   resource_group_name = azurerm_resource_group.rg_des.name
@@ -36,7 +41,8 @@ resource "azurerm_linux_virtual_machine" "lvm" {
 
   admin_ssh_key {
     username   = "adminuser"
-    public_key = file("~/.ssh/id_rsa.pub")
+    #public_key = file("~/.ssh/id_rsa.pub")
+     public_key = tls_private_key.linux_test_ssh.public_key_openssh
   }
 
   os_disk {

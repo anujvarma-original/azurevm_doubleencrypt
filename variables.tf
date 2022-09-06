@@ -9,7 +9,7 @@ variable "region" {
 }
 
 variable "suffix" {
-    default = "test-des-tje"
+    default = "test-des-av"
     type    = string
 }
 
