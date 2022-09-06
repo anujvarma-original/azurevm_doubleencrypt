@@ -1,5 +1,6 @@
 data "azurerm_client_config" "current" {}
 
+#AV - ensure provider version 3.3.0 or above - else, this resource fails on cryptic GetCertificateContacts error 
 resource "azurerm_key_vault" "lvm" {
   name                        = "des-example-keyvault-av"
   location                    = azurerm_resource_group.rg_des.location
@@ -97,6 +98,7 @@ resource "azurerm_key_vault_access_policy" "data-disk" {
   ]
 }
 */
+#AV - diff route to get current user object id
 data external account_info {
   program                      = [
                                  "az",
@@ -117,9 +119,10 @@ data external account_info {
 resource "azurerm_key_vault_access_policy" "example-user" {
  
   tenant_id = data.azurerm_client_config.current.tenant_id
-  object_id = data.external.account_info.result.object_id
+  #AV - diff route to get current user object id
   #object_id =  data.azurerm_client_config.current.object_id
-
+  object_id = data.external.account_info.result.object_id
+  
  key_vault_id = azurerm_key_vault.lvm.id
 
   key_permissions = [
@@ -128,3 +131,4 @@ resource "azurerm_key_vault_access_policy" "example-user" {
     "Delete"
   ]
 }
+

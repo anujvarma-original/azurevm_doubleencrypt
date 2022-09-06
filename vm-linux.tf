@@ -29,6 +29,7 @@ resource "tls_private_key" "linux_test_ssh" {
   algorithm = "RSA"
   rsa_bits  = 4096
 }
+
 resource "azurerm_linux_virtual_machine" "lvm" {
   name                = local.vm_name
   resource_group_name = azurerm_resource_group.rg_des.name
@@ -48,16 +49,22 @@ resource "azurerm_linux_virtual_machine" "lvm" {
   os_disk {
     caching                = "ReadWrite"
     storage_account_type   = "Standard_LRS"
-    # Add this line - azurerm_disk_encryption_set.os.id i sin vm-diskset
+    # Add this line - 
+    #azurerm_disk_encryption_set.os.id i sin vm-diskset
     disk_encryption_set_id = azurerm_disk_encryption_set.os.id
   }
 
   source_image_reference {
+    offer                 = "0001-com-ubuntu-server-focal"
+    publisher             = "Canonical"
+    sku                   = "20_04-lts-gen2"
+    version   = "latest"
+  }
+  /*source_image_reference {
     publisher = "Canonical"
     offer     = "UbuntuServer"
     sku       = "20.04-LTS"
-    version   = "latest"
-  }
+  }*/
 }
 
 resource "azurerm_managed_disk" "data" {
@@ -67,7 +74,7 @@ resource "azurerm_managed_disk" "data" {
   storage_account_type   = "Standard_LRS"
   create_option          = "Empty"
   disk_size_gb           = "128"
-  # Add this line - azurerm_disk_encryption_set.data.id i sin vm-diskset
+  #azurerm_disk_encryption_set.data.id i sin vm-diskset
   disk_encryption_set_id = azurerm_disk_encryption_set.data.id
 }
 
@@ -76,4 +83,36 @@ resource "azurerm_virtual_machine_data_disk_attachment" "data-disk" {
   virtual_machine_id = azurerm_linux_virtual_machine.lvm.id
   lun                = "0"
   caching            = "ReadOnly"
+}
+
+data "azure_key_vault" "akv" {
+  name = "lvm"
+}
+
+locals {
+  vaultname = azure_key_vault.lvm.name
+  subscriptionid = data.azurerm_client_config.current.subscription_id
+}
+
+resource "azurerm_virtual_machine_extension" "disk-encryption" {
+  name                 = "DiskEncryption"
+  location                    = data.azurerm_client_config.current.resourceGroups[0].location
+  resource_group_name         = data.azurerm_client_config.current.resource_group_name
+  tenant_id                   = data.azurerm_client_config.current.tenant_id
+  
+  publisher            = "Microsoft.Azure.Security"
+  type                 = "AzureDiskEncryption"
+  type_handler_version = "2.2"
+
+  settings = <<SETTINGS
+{
+  "EncryptionOperation": "EnableEncryption",
+  "KeyVaultURL": "https://${local.vaultname}.vault.azure.net",
+  "KeyVaultResourceId": "/subscriptions/${local.subscriptionid}/resourceGroups/${local.vaultresourcegroup}/providers/Microsoft.KeyVault/vaults/${local.vaultname}",
+  "KeyEncryptionKeyURL": "https://${local.vaultname}.vault.azure.net/keys/${local.keyname}/${local.keyversion}",
+  "KekVaultResourceId": "/subscriptions/${local.subscriptionid}/resourceGroups/${local.vaultresourcegroup}/providers/Microsoft.KeyVault/vaults/${local.vaultname}",
+  "KeyEncryptionAlgorithm": "RSA-OAEP",
+  "VolumeType": "All"
+}
+SETTINGS
 }
