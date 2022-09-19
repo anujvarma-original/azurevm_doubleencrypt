@@ -58,7 +58,7 @@ resource "azurerm_windows_virtual_machine" "wvm" {
     disk_encryption_set_id = azurerm_disk_encryption_set.os.id
   }
 
-
+ // This is straight off the marketplace
   /*source_image_reference {
     publisher = "MicrosoftWindowsServer"
     offer     = "WindowsServer"

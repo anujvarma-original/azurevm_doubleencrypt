@@ -14,7 +14,6 @@ variable "suffix" {
 }
 
 variable "rg_name" {
-  #default = "azcost"
   default = "rg-test-des-av-win"
   type    = string
 }
@@ -33,14 +32,12 @@ variable "vm_size" {
 variable "gallery_name" {
   type        = string
   default = "wincustom"
-  #default     = "azdevsig"
   description = "image gallery name"
 }
 
 variable "custom_image_name" {
   type        = string
   default     = "customwindef"
-  #default     = "vid02"
   description = "custom image name"
 }
 
