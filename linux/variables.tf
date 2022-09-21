@@ -31,7 +31,7 @@ variable "vm_size" {
 
 variable "gallery_name" {
   type        = string
-  default = "wincustom"
+  default = "lnxcustom"
   description = "image gallery name"
 }
 
