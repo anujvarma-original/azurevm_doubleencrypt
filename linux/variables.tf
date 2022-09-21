@@ -14,7 +14,7 @@ variable "suffix" {
 }
 
 variable "rg_name" {
-    default = "rg"
+    default = "rglnx"
     type    = string
 }
 
@@ -27,4 +27,16 @@ variable "vm_size" {
   type        = string
   default     = "Standard_D2s_v3"
   description = "Recommended: Standard_E8-4s_v5"
+}
+
+variable "gallery_name" {
+  type        = string
+  default = "wincustom"
+  description = "image gallery name"
+}
+
+variable "custom_image_name" {
+  type        = string
+  default     = "customlnxdef"
+  description = "custom image name"
 }
