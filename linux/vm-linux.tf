@@ -1,3 +1,9 @@
+data "azurerm_shared_image" "azure_image_repo" {
+  name                = var.custom_image_name
+  gallery_name        = var.gallery_name
+  resource_group_name = var.rg_name
+}
+
 resource "azurerm_virtual_network" "lvm" {
   name                = "vnet-${var.suffix}"
   address_space       = ["10.0.0.0/16"]
@@ -54,17 +60,15 @@ resource "azurerm_linux_virtual_machine" "lvm" {
     disk_encryption_set_id = azurerm_disk_encryption_set.os.id
   }
 
-  source_image_reference {
+source_image_id = data.azurerm_shared_image.azure_image_repo.id
+
+/*  source_image_reference {
     offer                 = "0001-com-ubuntu-server-focal"
     publisher             = "Canonical"
     sku                   = "20_04-lts-gen2"
     version   = "latest"
   }
-  /*source_image_reference {
-    publisher = "Canonical"
-    offer     = "UbuntuServer"
-    sku       = "20.04-LTS"
-  }*/
+  */
 }
 
 resource "azurerm_managed_disk" "data" {
@@ -85,25 +89,22 @@ resource "azurerm_virtual_machine_data_disk_attachment" "data-disk" {
   caching            = "ReadOnly"
 }
 
-data "azure_key_vault" "akv" {
-  name = "lvm"
-}
 
 locals {
-  vaultname = azure_key_vault.lvm.name
+  vaultname  = azurerm_key_vault.lvm.name
+  keyversion = azurerm_key_vault_key.lvm.version
+  keyname = azurerm_key_vault_key.lvm.name
+  vaultresourcegroup = azurerm_key_vault.lvm.resource_group_name
   subscriptionid = data.azurerm_client_config.current.subscription_id
 }
-
+ 
+/* AV - do not need to use this - if you are using CMK and azure disk encryption
 resource "azurerm_virtual_machine_extension" "disk-encryption" {
   name                 = "DiskEncryption"
-  location                    = data.azurerm_client_config.current.resourceGroups[0].location
-  resource_group_name         = data.azurerm_client_config.current.resource_group_name
-  tenant_id                   = data.azurerm_client_config.current.tenant_id
-  
+  virtual_machine_id = azurerm_linux_virtual_machine.lvm.id
   publisher            = "Microsoft.Azure.Security"
   type                 = "AzureDiskEncryption"
   type_handler_version = "2.2"
-
   settings = <<SETTINGS
 {
   "EncryptionOperation": "EnableEncryption",
@@ -116,3 +117,4 @@ resource "azurerm_virtual_machine_extension" "disk-encryption" {
 }
 SETTINGS
 }
+*/

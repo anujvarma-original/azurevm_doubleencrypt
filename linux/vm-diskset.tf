@@ -132,3 +132,20 @@ resource "azurerm_key_vault_access_policy" "example-user" {
   ]
 }
 
+/* AV - this can all be removed
+output "keyversion" {
+  value = azurerm_key_vault_key.lvm.version
+}
+
+output "keyname" {
+  value = azurerm_key_vault_key.lvm.name
+}
+
+output "rg_name" {
+  value = azurerm_key_vault.lvm.resource_group_name
+}
+
+output "akv_lvm_name" {
+  value = azurerm_key_vault.lvm.name
+}
+*/
